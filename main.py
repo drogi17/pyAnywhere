@@ -81,3 +81,7 @@ elif args.console:
             user.consoles().console(get_console_id).send_input(input(get_latest_output)+'\n')
     except KeyboardInterrupt:
         print('Stopped')
+
+else:
+    print('''usage: main.py [-h] [--login] [--consoles] [--console-info CONSOLE_INFO]
+[--console CONSOLE]''')
