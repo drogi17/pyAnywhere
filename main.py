@@ -15,7 +15,7 @@ def get_user():
     return user
 
 parser = argparse.ArgumentParser(description='Great Description To Be Here')
-parser.add_argument('--login', action='store_true', help='Log in system')
+parser.add_argument('--login', action='store_true', help='Log in system. Token: https://www.pythonanywhere.com/user/{username}/account/#api_token')
 parser.add_argument('--consoles', action='store_true', help='All user consoles')
 parser.add_argument('--console-info', help='Get console info')
 parser.add_argument('--console', help='Connect to console')
