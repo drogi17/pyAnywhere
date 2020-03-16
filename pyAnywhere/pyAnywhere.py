@@ -5,70 +5,74 @@ class Error_pyAnywhere(Exception):
         self.txt = text
 
 
-class console_class(object):
-    def __init__(self, username, token, id_console):
-        self.token      = token
+class ConsoleSession(object):
+    def __init__(self, username, session, console_id):
         self.username   = username
-        self.id_console = id_console
+        self.session    = session
+        self.console_id = console_id
+
     def info(self):
-        response = requests.get(
-            'https://www.pythonanywhere.com/api/v0/user/{username}/consoles/{id_console}/'.format(username=self.username, id_console=self.id_console),
-            headers={'Authorization': 'Token {token}'.format(token=self.token)}).content.decode()
+        response = self.session.get(
+            'https://www.pythonanywhere.com/api/v0/user/{username}/consoles/{console_id}/'.format(
+                username=self.username, 
+                console_id=self.console_id
+                )
+            ).content.decode()
         consoles_about = json.loads(response)
         return consoles_about
     def get_latest_output(self):
-        if self.id_console:
-            response = requests.get(
-                'https://www.pythonanywhere.com/api/v0/user/{username}/consoles/{id_console}/get_latest_output/'.format(
+        if self.console_id:
+            response = self.session.get(
+                'https://www.pythonanywhere.com/api/v0/user/{username}/consoles/{console_id}/get_latest_output/'.format(
                     username=self.username, 
-                    id_console=self.id_console
-                    ),
-                headers={'Authorization': 'Token {token}'.format(token=self.token)}).content.decode()
+                    console_id=self.console_id
+                    )
+                ).content.decode()
             consoles_about = json.loads(response)
             return consoles_about
         else:
             return None
     def send_input(self, command):
-        if self.id_console:
-            data_send = requests.post('https://www.pythonanywhere.com/api/v0/user/{username}/consoles/{id_console}/send_input/'.format(
+        if self.console_id:
+            send_status = self.session.post('https://www.pythonanywhere.com/api/v0/user/{username}/consoles/{console_id}/send_input/'.format(
                     username=self.username, 
-                    id_console=self.id_console
+                    console_id=self.console_id
                     ),
-                headers={'Authorization': 'Token {token}'.format(token=self.token)},
-                json={'input': str(command)})
-            return data_send.text
+                json={'input': str(command)}
+            )
+            return send_status.text
         else:
             return None
         
 
-class consoles_class(object):
-    def __init__(self, username, token):
-        self.token      = token
-        self.username   = username
-
+class Consoles(object):
+    def __init__(self, username, session):
+        self.session  = session
+        self.username = username
+       
     def all(self):
-        response = requests.get(
+        response = self.session.get(
             'https://www.pythonanywhere.com/api/v0/user/{username}/consoles/'.format(
-                    username=self.username),
-            headers={'Authorization': 'Token {token}'.format(token=self.token)}
+                username=self.username
+                )
         ).content.decode()
-        consoles_all = json.loads(response)
-        return consoles_all
-    def console(self, id_console=None): 
-        if id_console:
-            return console_class(self.username, self.token, id_console)
+        all_consoles = json.loads(response)
+        return all_consoles
+    def console(self, console_id=None): 
+        if console_id:
+            return ConsoleSession(self.username, self.session, console_id)
 
 class pyAnywhere(object):
-	__name__ = 'pyAnywhere'
-	__vesrion__ = '1'
     def __init__(self, username, token):
         response = requests.get(
             'https://www.pythonanywhere.com/api/v0/user/{username}/cpu/'.format(username=username),
             headers={'Authorization': 'Token {token}'.format(token=token)})
         if response.status_code == 200:
-            self.token = token
+            # self.token    = token
             self.username = username
+            self.session  = requests.Session()
+            self.session.headers.update({'Authorization': 'Token {token}'.format(token=token)})
         else:
             raise Error_pyAnywhere("Incorrect data")
     def consoles(self):
-        return consoles_class(self.username, self.token)
+        return Consoles(self.username, self.session)
