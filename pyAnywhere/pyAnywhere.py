@@ -7,13 +7,13 @@ class ErrorOutput(Exception):
 def checking_server_response(response):
     if response.status_code < 200:    # 1xx
         return (True, 'info')
-    elif response.status_code <= 300: # 2xx
+    elif response.status_code < 300: # 2xx
         return (True, 'successfully')
-    elif response.status_code <= 400: # 3xx
+    elif response.status_code < 400: # 3xx
         return (True, 'redirection')
-    elif response.status_code <= 500: # 4xx
+    elif response.status_code < 500: # 4xx
         return (False, 'client_error')
-    elif response.status_code <= 600: # 5xx
+    elif response.status_code < 600: # 5xx
         return (False, 'server_error')
 
 class ConsoleSession(object):
