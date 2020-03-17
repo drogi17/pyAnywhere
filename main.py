@@ -125,6 +125,9 @@ elif args.console:
 
 elif args.update:
     response = requests.get('https://api.github.com/repos/drogi17/pyAnywhere/contents/VERSION')
+    if response.status_code == 403:
+    	print('Update limit exceeded.')
+    	sys.exit()
     version_base64 = response.json().get('content')
     version_new  = json.loads(base64.b64decode(version_base64).decode())
     with open('VERSION', 'r') as f:
