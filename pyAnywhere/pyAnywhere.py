@@ -40,9 +40,12 @@ class ConsoleSession(object):
                     console_id=self.console_id
                     )
                 )
+            # print(checking_server_response(response))
             if checking_server_response(response)[0]:
                 consoles_about = response.json()
                 return consoles_about
+            else:
+                return None
         else:
             return None
     def send_input(self, command):
@@ -77,6 +80,7 @@ class Consoles(object):
             return ConsoleSession(self.username, self.session, console_id)
 
 class pyAnywhere(object):
+    __version__ = 3
     def __init__(self, username, token):
         response = requests.get(
             'https://www.pythonanywhere.com/api/v0/user/{username}/cpu/'.format(username=username),
