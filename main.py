@@ -42,11 +42,10 @@ def save_files(link_array):
                     os.mkdir(file[1])
                 except FileExistsError:
                     pass
-            else:
-                with open(file[0], 'w') as f:
-                    f.write(file[2])
-                print('[Ok] ' + file[0])
-                # print(file)
+            with open(file[0], 'w') as f:
+                f.write(file[2])
+            print('[Ok] ' + file[0])
+            # print(file[0])
     sys.exit()
 
 def update_program():
