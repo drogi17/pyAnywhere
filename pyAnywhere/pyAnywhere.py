@@ -4,7 +4,7 @@ class ErrorOutput(Exception):
     def __init__(self, text):
         self.txt = text
 
-def checking_server_response(response):
+def checking_server_response(response) -> tuple:
     if response.status_code < 200:    # 1xx
         return (True, 'info')
     elif response.status_code >= 200 and response.status_code < 300: # 2xx
@@ -40,7 +40,6 @@ class ConsoleSession(object):
                     console_id=self.console_id
                     )
                 )
-            # print(checking_server_response(response))
             if checking_server_response(response)[0]:
                 consoles_about = response.json()
                 return consoles_about
@@ -79,8 +78,69 @@ class Consoles(object):
         if console_id:
             return ConsoleSession(self.username, self.session, console_id)
 
+
+
+class WebappControl(object):
+    def __init__(self, username, session, webapp_name):
+        self.session  = session
+        self.username = username
+        self.webapp_name = webapp_name
+
+    def enable(self):
+        response = self.session.post(
+            'https://www.pythonanywhere.com/api/v0/user/{username}/webapps/{domain_name}/enable/'.format(
+                username=self.username,
+                domain_name=self.webapp_name
+                )
+            )
+        if checking_server_response(response)[0]:
+            return True
+        else:
+            return False
+
+    def disable(self):
+        response = self.session.post(
+            'https://www.pythonanywhere.com/api/v0/user/{username}/webapps/{domain_name}/disable/'.format(
+                username=self.username,
+                domain_name=self.webapp_name
+                )
+            )
+        if checking_server_response(response)[0]:
+            return True
+        else:
+            return False
+
+    def reload(self):
+        response = self.session.post(
+            'https://www.pythonanywhere.com/api/v0/user/{username}/webapps/{domain_name}/reload/'.format(
+                username=self.username,
+                domain_name=self.webapp_name
+                )
+            )
+        if checking_server_response(response)[0]:
+            return True
+        else:
+            return False
+
+class Webapps(object):
+    def __init__(self, username, session):
+        self.session  = session
+        self.username = username
+
+    def all(self):
+        response = self.session.get(
+            'https://www.pythonanywhere.com/api/v0/user/{username}/webapps/'.format(
+                username=self.username
+                )
+        )
+        if checking_server_response(response)[0]:
+            all_consoles = response.json()
+            return all_consoles
+
+    def webapp(self, name):
+        return WebappControl(self.username, self.session, name)
+
 class pyAnywhere(object):
-    __version__ = 3
     def __init__(self, username, token):
         response = requests.get(
             'https://www.pythonanywhere.com/api/v0/user/{username}/cpu/'.format(username=username),
@@ -93,3 +153,20 @@ class pyAnywhere(object):
             raise ErrorOutput("Incorrect data")
     def consoles(self):
         return Consoles(self.username, self.session)
+
+    def upload_file(self, file_path, server_path):
+        if server_path.startswith('/'):
+            server_path = server_path[1:]
+        server_path = '/home/%s/%s' % (self.username, server_path)
+        response =  self.session.post('https://www.pythonanywhere.com/api/v0/user/{username}/files/path/{path}'.format(
+                        username=self.username,
+                        path=server_path),
+                    files={'content': open(file_path, 'rb')}
+                    )
+        if checking_server_response(response)[0]:
+            return response.text
+        else:
+            return response.text
+
+    def webapps(self):
+        return Webapps(self.username, self.session)

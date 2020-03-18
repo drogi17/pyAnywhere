@@ -1,4 +1,3 @@
-from pyAnywhere.pyAnywhere import pyAnywhere
 import argparse
 import requests
 import os
@@ -6,7 +5,8 @@ import json
 import sys
 import base64
 
-__version__ = 2
+from colors.colors import ok_text, error_text
+from pyAnywhere.pyAnywhere import pyAnywhere
 
 def get_user():
     if not os.path.exists('.pyAnywhere/config.cfg'):
@@ -44,20 +44,28 @@ def save_files(link_array):
                     pass
             with open(file[0], 'w') as f:
                 f.write(file[2])
-            print('[Ok] ' + file[0])
-            # print(file[0])
+            print('[%s] %s' % (ok_text('OK'), file[0]))
     sys.exit()
 
 def update_program():
     update_links = dir_files('https://api.github.com/repos/drogi17/pyAnywhere/contents', '.')
     save_files(update_links)
 
-parser = argparse.ArgumentParser(description='Great Description To Be Here')
+parser = argparse.ArgumentParser(description='pyAnywhere')
 parser.add_argument('--login', action='store_true', help='Log in system. Token: https://www.pythonanywhere.com/user/{username}/account/#api_token')
 parser.add_argument('--consoles', action='store_true', help='All user consoles')
 parser.add_argument('--console-info', help='Get console info')
 parser.add_argument('--console', help='Connect to console')
 parser.add_argument('--update', action='store_true', help='Get a new version of the program.')
+parser.add_argument('--upload', action='store_true', help='Upload file to your server. -f <path> -s <server path>\nExample: --upload -f files.txt -s /files/files.txt')
+parser.add_argument('-f', action='store', help='File to upload')
+parser.add_argument('-s', action='store', help='The path to be loaded')
+
+parser.add_argument('--webapps', action='store_true', help='All user webapps')
+parser.add_argument('--webapp', help='Web application control. (argument: domain)\n-e/-d/-r')
+parser.add_argument('-e', action='store_true', help='Enable webapp')
+parser.add_argument('-d', action='store_true', help='Disable webapp')
+parser.add_argument('-r', action='store_true', help='Reload the webapp')
 
 args = parser.parse_args()
 
@@ -117,7 +125,6 @@ elif args.console:
                 print('[ERROR]: ' + server_response.get('error'))
                 sys.exit()
             get_latest_output = server_response.get('output')
-            # print([get_latest_output])
             user.consoles().console(get_console_id).send_input(input(get_latest_output)+'\n')
     except KeyboardInterrupt:
         print('Stopped')
@@ -141,6 +148,42 @@ elif args.update:
             print('Ok...')
     else:
         print('You have the latest version of the program.')
+
+elif args.upload:
+    if args.f and args.s:
+        file_path   = args.f
+        server_path = args.s
+        user = get_user()
+        print(user.upload_file(file_path, server_path))
+
+elif args.webapps:
+    user = get_user()
+    webapps_all = user.webapps().all()
+    if not webapps_all:
+        print('You have no running consoles')
+    else:
+        print('\tID\tDOMAIN\t\t\t\tSource Sirectory')
+        for console_info in webapps_all:
+            print('    %s |\t%s |\t%s' % (console_info.get('id'), console_info.get('domain_name'), console_info.get('source_directory')))
+
+elif args.webapp:
+    user = get_user()
+    webapp_name = args.webapp
+    if args.e:
+        if user.webapps().webapp(webapp_name).enable():
+            print('[%s] %s: Enabled' % (ok_text('OK'), webapp_name))
+        else:
+            print('[%s] %s: Enabled' % (error_text('ERROR'), webapp_name))
+    if args.d:
+        if user.webapps().webapp(webapp_name).disable():
+            print('[%s] %s: Disabled' % (ok_text('OK'), webapp_name))
+        else:
+            print('[%s] %s: Enabled' % (error_text('ERROR'), webapp_name))
+    if args.r:
+        if user.webapps().webapp(webapp_name).reload():
+            print('[%s] %s: Restarted' % (ok_text('OK'), webapp_name))
+        else:
+            print('[%s] %s: Enabled' % (error_text('ERROR'), webapp_name))
 
 else:
     print('''usage: main.py [-h] [--login] [--consoles] [--console-info CONSOLE_INFO]
