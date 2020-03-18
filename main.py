@@ -56,7 +56,7 @@ parser.add_argument('--login', action='store_true', help='Log in system. Token: 
 parser.add_argument('--consoles', action='store_true', help='All user consoles')
 parser.add_argument('--console-info', help='Get console info')
 parser.add_argument('--console', help='Connect to console')
-parser.add_argument('--update', action='store_true', help='Get a new version of the program.')
+# parser.add_argument('--update', action='store_true', help='Get a new version of the program.')
 parser.add_argument('--upload', action='store_true', help='Upload file to your server. -f <path> -s <server path>\nExample: --upload -f files.txt -s /files/files.txt')
 parser.add_argument('-f', action='store', help='File to upload')
 parser.add_argument('-s', action='store', help='The path to be loaded')
@@ -129,25 +129,25 @@ elif args.console:
     except KeyboardInterrupt:
         print('Stopped')
 
-elif args.update:
-    response = requests.get('https://api.github.com/repos/drogi17/pyAnywhere/contents/VERSION')
-    if response.status_code == 403:
-    	print('Update limit exceeded.')
-    	sys.exit()
-    version_base64 = response.json().get('content')
-    version_new  = json.loads(base64.b64decode(version_base64).decode())
-    with open('VERSION', 'r') as f:
-        version_now = json.loads(f.read())
-    cli_version  = version_now.get('pyAnywhere_cli')
-    lib_version  = version_now.get('pyAnywhere_lib')
-    if lib_version != version_new.get('pyAnywhere_lib') or cli_version != version_new.get('pyAnywhere_cli'):
-        print('Found a new version of the program. (client: %s, lib: %s)' % (version_new.get('pyAnywhere_cli'), version_new.get('pyAnywhere_lib')))
-        if input('Would you like to update?(y, n): ') in ['y', 'Y', 'Д', 'д']:
-            update_program()
-        else:
-            print('Ok...')
-    else:
-        print('You have the latest version of the program.')
+# elif args.update:
+#     response = requests.get('https://api.github.com/repos/drogi17/pyAnywhere/contents/VERSION')
+#     if response.status_code == 403:
+#         print('Update limit exceeded.')
+#         sys.exit()
+#     version_base64 = response.json().get('content')
+#     version_new  = json.loads(base64.b64decode(version_base64).decode())
+#     with open('VERSION', 'r') as f:
+#         version_now = json.loads(f.read())
+#     cli_version  = version_now.get('pyAnywhere_cli')
+#     lib_version  = version_now.get('pyAnywhere_lib')
+#     if lib_version != version_new.get('pyAnywhere_lib') or cli_version != version_new.get('pyAnywhere_cli'):
+#         print('Found a new version of the program. (client: %s, lib: %s)' % (version_new.get('pyAnywhere_cli'), version_new.get('pyAnywhere_lib')))
+#         if input('Would you like to update?(y, n): ') in ['y', 'Y', 'Д', 'д']:
+#             update_program()
+#         else:
+#             print('Ok...')
+#     else:
+#         print('You have the latest version of the program.')
 
 elif args.upload:
     if args.f and args.s:
